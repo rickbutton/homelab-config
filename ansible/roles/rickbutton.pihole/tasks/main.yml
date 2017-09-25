@@ -1,0 +1,103 @@
+---
+# tasks file for rickbutton.sonarr
+
+- name: config resolved.conf
+  template:
+    src: resolved.conf
+    dest: /etc/systemd/resolved.conf
+    mode: 0644
+    owner: root
+    group: root
+  register: resolved
+
+- name: restart systemd-resolved
+  command:  systemctl restart systemd-resolved
+  when: resolved.changed
+
+- name: make hosts/parts folder
+  file:
+    path: "{{ pihole.config_dir}}/hosts/parts"
+    state: directory
+    owner: root
+    group: root
+    mode: 0644
+
+- name: copy over static_hosts
+  copy:
+    src: "{{ pihole.static_host_file }}"
+    dest: "{{ pihole.config_dir }}/hosts/parts/static_hosts"
+    mode: 0644
+    owner: root
+    group: root
+
+- name: config header_hosts
+  copy:
+    src: "header_hosts"
+    dest: "{{ pihole.config_dir }}/hosts/parts/header_hosts"
+    mode: 0644
+    owner: root
+    group: root
+
+- assemble:
+    src: "{{ pihole.config_dir}}/hosts/parts"
+    dest: "{{ pihole.config_dir}}/hosts/hosts"
+    delimiter: "\n\n\n"
+  register: piholeconfig
+
+- name: stat steam dnsmasq config (before)
+  stat:
+    path: "{{ pihole.config_dir }}/dnsmasq.d/02-steam.conf"
+    get_checksum: yes
+    checksum_algorithm: md5
+  register: steambefore
+
+d- name: download steam hosts
+#  shell: 
+#    warn: false
+#    cmd: >-
+#      curl -s https://raw.githubusercontent.com/uklans/cache-domains/master/steam.txt | 
+#      sed "s/\*\./\./g" | 
+#      awk '{$1=$1};1' | 
+#      awk '{ print "address=/"$0"/{{ pihole.steam_ip }}"}' > 
+#      {{ pihole.config_dir }}/dnsmasq.d/02-steam.conf
+#  changed_when: false
+
+- name: stat steam dnsmasq config (after)
+  stat:
+    path: "{{ pihole.config_dir }}/dnsmasq.d/02-steam.conf"
+    get_checksum: yes
+    checksum_algorithm: md5
+  register: steamafter
+
+- name: create pihole docker container
+  docker_container:
+    name: pihole
+    image: pihole/pihole
+    restart_policy: always
+    volumes:
+      - "{{ pihole.config_dir}}/config:/etc/pihole"
+      - "{{ pihole.config_dir }}/dnsmasq.d:/etc/dnsmasq.d"
+      - "{{ pihole.config_dir }}/hosts/hosts:/etc/hosts"
+    capabilities:
+      - "NET_ADMIN"
+    dns_servers:
+      - "127.0.0.1"
+      - "{{ pihole.upstream1 }}"
+    env:
+      ServerIP: "{{ pihole.ip }}"
+      WEBPASSWORD: "{{ pihole.password }}"
+      DNS1: "{{ pihole.upstream1 }}"
+      DNS2: "{{ pihole.upstream2 }}"
+      VIRTUAL_HOST: "{{ pihole.host }}"
+      DNSMASQ_LISTENING: "all"
+    ports:
+      - "53:53/tcp" 
+      - "53:53/udp" 
+
+- name: reload pihole
+  command: docker exec pihole pihole restartdns
+  when: piholeconfig.changed
+
+#- name: reload pihole (when steam updates)
+#  command: docker exec pihole pihole restartdns
+#  when: "steambefore.stat.checksum != steamafter.stat.checksum"

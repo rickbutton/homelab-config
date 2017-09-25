@@ -1,0 +1,21 @@
+---
+- hosts: all
+  roles:
+    - rickbutton.base
+  sudo: yes
+  remote_user: rickbutton
+
+- hosts: internal_docker
+  roles:
+    - rickbutton.docker
+    - { role: rickbutton.nginxproxy, tags: nginxproxy }
+    - rickbutton.media
+    - { role: rickbutton.plex, tags: plex }
+    - rickbutton.sonarr
+    - rickbutton.sabnzbd
+    - { role: rickbutton.pihole, tags: pihole }
+    - { role: rickbutton.dmzproxy, tags: dmzproxy }
+  sudo: yes
+  remote_user: rickbutton
+  vars_files:
+    - vars.yml

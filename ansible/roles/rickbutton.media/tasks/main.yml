@@ -1,0 +1,8 @@
+---
+# tasks file for rickbutton.media
+- name: mount media
+  mount:
+    name: /mnt/media
+    src: "{{ media.host }}:{{ media.path }}"
+    fstype: nfs
+    state: mounted

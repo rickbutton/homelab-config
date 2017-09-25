@@ -1,0 +1,16 @@
+---
+# tasks file for rickbutton.sabnzbd
+- name: create sabnzbd docker container
+  docker_container:
+    name: sabnzbd
+    image: linuxserver/sabnzbd
+    restart_policy: always
+    volumes:
+      - "{{ sabnzbd.config_dir }}:/config"
+      - "{{ sabnzbd.complete_dir }}:/downloads"
+      - "{{ sabnzbd.incomplete_dir }}:/incomplete-downloads"
+    env:
+      PUID: "{{ docker.uid }}"
+      PGID: "{{ docker.gid }}"
+      VIRTUAL_HOST: "{{ sabnzbd.host }}"
+      VIRTUAL_PORT: "8080"

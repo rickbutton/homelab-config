@@ -1,0 +1,96 @@
+---
+- name: create nginx data dir
+  file:
+    path: "{{ nginx_proxy.data_dir }}"
+    state: directory
+    mode: 0755
+    owner: app
+    group: app
+
+- name: create nginx certs dir
+  file:
+    path: "{{ nginx_proxy.data_dir }}/certs"
+    state: directory
+    mode: 0755
+    owner: app
+    group: app
+
+- name: copy allproxy.conf
+  copy:
+    owner: app
+    mode: 0755
+    group: app
+    src: allproxy.conf
+    dest: "{{ nginx_proxy.data_dir}}/allproxy.conf"
+
+- name: nginx proxy container
+  docker_container:
+    name: nginx-proxy
+    image: jwilder/nginx-proxy
+    state: started
+    volumes:
+     - "{{ nginx_proxy.data_dir }}/allproxy.conf:/etc/nginx/conf.d/allproxy.conf:ro"
+     - "{{ nginx_proxy.data_dir }}/certs:/etc/nginx/certs"
+     - "{{ letsencrypt.data_dir }}/certs:/etc/letsencrypt/certs"
+     - /var/run/docker.sock:/tmp/docker.sock:ro
+    ports:
+     - "{{ nginx_proxy.ip }}:80:80"
+     - "{{ nginx_proxy.ip }}:443:443"
+
+- name: create letsencrypt data dir
+  file:
+    path: "{{ letsencrypt.data_dir }}"
+    state: directory
+    mode: 0755
+    owner: app
+    group: app
+
+- name: copy domains.conf
+  copy:
+    owner: app
+    mode: 0755
+    group: app
+    src: domains.conf
+    dest: "{{ letsencrypt.data_dir}}/domains.conf"
+
+- name: create letsencrypt container
+  docker_container:
+    name: letsencrypt
+    image: adferrand/letsencrypt-dns
+    restart_policy: always
+    volumes:
+      - "{{ letsencrypt.data_dir}}/domains.conf:/etc/letsencrypt/domains.conf"
+      - "{{ letsencrypt.data_dir}}/certs:/etc/letsencrypt"
+    env:
+      LETSENCRYPT_USER_MAIL: "{{ letsencrypt.email }}"
+      LEXICON_PROVIDER: "cloudflare"
+      LEXICON_CLOUDFLARE_USERNAME: "{{ letsencrypt.cloudflare_email }}"
+      LEXICON_CLOUDFLARE_TOKEN: "{{ letsencrypt.cloudflare_token }}"
+
+- name: crt symlink
+  file:
+    force: yes
+    src: "../../letsencrypt/certs/live/{{ letsencrypt.wildcard_host }}/fullchain.pem"
+    dest: "/dockerconfig/nginx/certs/{{ letsencrypt.wildcard_host }}.crt"
+    state: link
+
+- name: key symlink
+  file:
+    force: yes
+    src: "../../letsencrypt/certs/live/{{ letsencrypt.wildcard_host }}/privkey.pem"
+    dest: "/dockerconfig/nginx/certs/{{ letsencrypt.wildcard_host }}.key"
+    state: link
+
+- name: plex crt symlink
+  file:
+    force: yes
+    src: "../../letsencrypt/certs/live/{{ letsencrypt.plex_host }}/fullchain.pem"
+    dest: "/dockerconfig/nginx/certs/{{ letsencrypt.plex_host }}.crt"
+    state: link
+
+- name: plex key symlink
+  file:
+    force: yes
+    src: "../../letsencrypt/certs/live/{{ letsencrypt.plex_host }}/privkey.pem"
+    dest: "/dockerconfig/nginx/certs/{{ letsencrypt.plex_host }}.key"
+    state: link

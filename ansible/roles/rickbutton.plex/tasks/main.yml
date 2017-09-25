@@ -1,0 +1,29 @@
+---
+# tasks file for rickbutton.plex
+- name: create plex docker container
+  docker_container:
+    name: plex
+    image: plexinc/pms-docker
+    restart_policy: always
+    restart: yes
+    volumes:
+      - "{{ plex.config_dir }}:/config"
+      - "{{ plex.media_dir }}:/data"
+      - "{{ plex.media_dir }}/temp/transcode:/transcode"
+    env:
+      VIRTUAL_HOST: "{{ plex.host }}"
+      VIRTUAL_PORT: "32400"
+      HOSTNAME: "plex"
+      PLEX_CLAIM: "{{ plex.claim }}"
+      ADVERTISE_IP: "{{ plex.advertise_ip }}"
+      PLEX_UID: "{{ docker.uid }}"
+      PLEX_GID: "{{ docker.gid }}"
+    ports:
+      #- "{{ plex.ip }}:3005:3005/tcp" 
+      #- "{{ plex.ip }}:8324:8324/tcp" 
+      #- "{{ plex.ip }}:32469:32469/tcp" 
+      #- "{{ plex.ip }}:1900:1900/udp" 
+      #- "{{ plex.ip }}:32410:32410/udp" 
+      #- "{{ plex.ip }}:32412:32412/udp" 
+      #- "{{ plex.ip }}:32413:32413/udp" 
+      #- "{{ plex.ip }}:32414:32414/udp" 

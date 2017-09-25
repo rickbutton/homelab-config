@@ -1,0 +1,17 @@
+---
+# tasks file for rickbutton.sonarr
+- name: create sonarr docker container
+  docker_container:
+    name: sonarr
+    image: linuxserver/sonarr
+    restart_policy: always
+    pull: yes
+    volumes:
+      - "/dev/rtc:/dev/rtc:ro"
+      - "{{ sonarr.config_dir }}:/config"
+      - "{{ sonarr.media_dir }}:/tv"
+      - "{{ sonarr.downloads_dir }}:/downloads"
+    env:
+      PUID: "{{ docker.uid }}"
+      PGID: "{{ docker.gid }}"
+      VIRTUAL_HOST: "{{ sonarr.host }}"

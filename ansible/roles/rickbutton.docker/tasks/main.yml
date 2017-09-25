@@ -1,0 +1,87 @@
+---
+# tasks file for rickbutton.docker
+- name: install apt-transport-https
+  apt:
+    name: apt-transport-https
+    state: present
+    update_cache: yes
+
+- name: install ca-certificates
+  apt:
+    name: ca-certificates
+    state: present
+
+- name: install pip
+  apt:
+    pkg: "{{ item }}"
+    state: present
+  with_items:
+    - python-dev
+    - python-pip
+
+- name: add docker apt_key
+  apt_key:
+    url: "https://download.docker.com/linux/ubuntu/gpg"
+    state: present
+
+- name: add docker repo
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu bionic stable
+    state: present
+
+- name: install docker-engine
+  apt:
+    name: docker-ce
+    update_cache: yes
+    state: present
+
+- name: enable docker service
+  service: 
+    name: docker
+    enabled: yes
+    state: started
+
+- name: install docker pip
+  pip:
+    name: docker
+
+- name: create dockerconfig path
+  file: 
+    path: /dockerconfig
+    state: directory
+    mode: 0775
+    owner: app
+    group: app
+
+- name: create app group
+  group:
+    name: app
+    gid: "{{ docker.gid }}"
+    state: present
+
+- name: create app user
+  user: 
+    name: app
+    uid: "{{ docker.uid }}"
+    group: app
+    state: present
+
+- name: create portainer data dir
+  file:
+    path: "{{ portainer.data_dir }}"
+    state: directory
+    mode: 0755
+    owner: app
+    group: app
+
+- name: portainer container
+  docker_container:
+    name: portainer
+    image: portainer/portainer
+    state: started
+    restart: yes
+    volumes:
+     - "{{ portainer.data_dir }}:/data"
+     - /var/run/docker.sock:/var/run/docker.sock
+    env:
+      VIRTUAL_HOST: "{{ portainer.host }}"

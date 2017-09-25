@@ -1,0 +1,38 @@
+---
+# tasks file for rickbutton.dmzproxy
+- name: add dmzproxy ip
+  raw: ip addr add {{ dmzproxy.ip }}/32 dev enp0s4
+  register: result
+  changed_when: 'result.rc != 2'
+  failed_when: false 
+
+- name: create config dir
+  file:
+    path: "{{ dmzproxy.config_dir }}"
+    state: directory
+    mode: 0644
+    owner: app
+    group: app
+
+- name: copy nginx config
+  template:
+    src: nginx.conf
+    dest: "{{ dmzproxy.config_dir }}/nginx.conf"
+    mode: 0644
+    owner: app
+    group: app
+  
+# TODO: restart container after config change
+
+- name: create nginx docker container
+  docker_container:
+    name: dmzproxy
+    image: nginx
+    restart_policy: always
+    pull: yes
+    volumes:
+      - "{{ dmzproxy.config_dir }}/nginx.conf:/etc/nginx/nginx.conf:ro"
+      - "{{ dmzproxy.plex_cert_crt }}:/certs/cert.crt"
+      - "{{ dmzproxy.plex_cert_key }}:/certs/cert.key"
+    ports:
+      - "{{ dmzproxy.ip }}:443:443"

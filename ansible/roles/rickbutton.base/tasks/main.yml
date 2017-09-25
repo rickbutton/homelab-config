@@ -1,0 +1,17 @@
+---
+# tasks file for rickbutton.base
+- name: install nfs common
+  apt: name=nfs-common state=present update_cache=yes
+
+- name: install iperf
+  apt: name=iperf state=present
+
+- name: install python2
+  apt:
+    pkg: python-simplejson
+    state: present
+
+- name: install htop
+  apt:
+    pkg: htop
+    state: present
