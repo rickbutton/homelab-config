@@ -11,7 +11,8 @@
     - { role: rickbutton.nginxproxy, tags: nginxproxy }
     - rickbutton.media
     - { role: rickbutton.plex, tags: plex }
-    - rickbutton.sonarr
+    - { role: rickbutton.sonarr, tags: sonarr }
+    - { role: rickbutton.couchpotato, tags: couchpotato }
     - rickbutton.sabnzbd
     - { role: rickbutton.pihole, tags: pihole }
     - { role: rickbutton.dmzproxy, tags: dmzproxy }

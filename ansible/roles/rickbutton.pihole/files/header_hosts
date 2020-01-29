@@ -1,5 +1,5 @@
-127.0.0.1       localhost.localdomain   localhost
-::1             localhost6.localdomain6 localhost6
+127.0.0.1       localhost.localdomain   localhost vdkrhm01
+::1             localhost6.localdomain6 localhost6 vdkrhm01
 
 # The following lines are desirable for IPv6 capable hosts
 ::1     localhost ip6-localhost ip6-loopback

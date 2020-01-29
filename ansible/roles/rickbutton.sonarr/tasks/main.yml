@@ -9,8 +9,8 @@
     volumes:
       - "/dev/rtc:/dev/rtc:ro"
       - "{{ sonarr.config_dir }}:/config"
-      - "{{ sonarr.media_dir }}:/tv"
-      - "{{ sonarr.downloads_dir }}:/downloads"
+      - "{{ sonarr.media_dir }}:/tv:rslave"
+      - "{{ sonarr.downloads_dir }}:/downloads:rslave"
     env:
       PUID: "{{ docker.uid }}"
       PGID: "{{ docker.gid }}"

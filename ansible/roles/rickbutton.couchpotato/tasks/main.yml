@@ -1,0 +1,17 @@
+---
+# tasks file for rickbutton.couchpotato
+- name: create couchpotato docker container
+  docker_container:
+    name: couchpotato
+    image: linuxserver/couchpotato
+    restart_policy: always
+    pull: yes
+    volumes:
+      - "{{ couchpotato.config_dir }}:/config"
+      - "{{ couchpotato.downloads_dir }}:/downloads:rslave"
+      - "{{ couchpotato.media_dir }}:/movies:rslave"
+    env:
+      PUID: "{{ docker.uid }}"
+      PGID: "{{ docker.gid }}"
+      TZ: "America/New_York"
+      VIRTUAL_HOST: "{{ couchpotato.host }}"

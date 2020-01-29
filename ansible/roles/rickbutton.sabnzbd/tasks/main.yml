@@ -7,8 +7,8 @@
     restart_policy: always
     volumes:
       - "{{ sabnzbd.config_dir }}:/config"
-      - "{{ sabnzbd.complete_dir }}:/downloads"
-      - "{{ sabnzbd.incomplete_dir }}:/incomplete-downloads"
+      - "{{ sabnzbd.complete_dir }}:/downloads:rslave"
+      - "{{ sabnzbd.incomplete_dir }}:/incomplete-downloads:rslave"
     env:
       PUID: "{{ docker.uid }}"
       PGID: "{{ docker.gid }}"

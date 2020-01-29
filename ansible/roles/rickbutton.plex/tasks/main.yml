@@ -1,5 +1,12 @@
 ---
 # tasks file for rickbutton.plex
+
+- name: add plex ip
+  raw: ip addr add {{ plex.ip }}/32 dev enp0s4
+  register: result
+  changed_when: 'result.rc != 2'
+  failed_when: false 
+
 - name: create plex docker container
   docker_container:
     name: plex
@@ -8,8 +15,8 @@
     restart: yes
     volumes:
       - "{{ plex.config_dir }}:/config"
-      - "{{ plex.media_dir }}:/data"
-      - "{{ plex.media_dir }}/temp/transcode:/transcode"
+      - "{{ plex.media_dir }}:/data:rslave"
+      - "{{ plex.media_dir }}/temp/transcode:/transcode:rslave"
     env:
       VIRTUAL_HOST: "{{ plex.host }}"
       VIRTUAL_PORT: "32400"
@@ -19,11 +26,12 @@
       PLEX_UID: "{{ docker.uid }}"
       PLEX_GID: "{{ docker.gid }}"
     ports:
-      #- "{{ plex.ip }}:3005:3005/tcp" 
-      #- "{{ plex.ip }}:8324:8324/tcp" 
-      #- "{{ plex.ip }}:32469:32469/tcp" 
-      #- "{{ plex.ip }}:1900:1900/udp" 
-      #- "{{ plex.ip }}:32410:32410/udp" 
-      #- "{{ plex.ip }}:32412:32412/udp" 
-      #- "{{ plex.ip }}:32413:32413/udp" 
-      #- "{{ plex.ip }}:32414:32414/udp" 
+      - "{{ plex.ip }}:32400:32400/tcp" 
+      - "{{ plex.ip }}:3005:3005/tcp" 
+      - "{{ plex.ip }}:8324:8324/tcp" 
+      - "{{ plex.ip }}:32469:32469/tcp" 
+      - "{{ plex.ip }}:1900:1900/udp" 
+      - "{{ plex.ip }}:32410:32410/udp" 
+      - "{{ plex.ip }}:32412:32412/udp" 
+      - "{{ plex.ip }}:32413:32413/udp" 
+      - "{{ plex.ip }}:32414:32414/udp" 

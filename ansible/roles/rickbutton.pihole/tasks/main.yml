@@ -51,7 +51,7 @@
     checksum_algorithm: md5
   register: steambefore
 
-d- name: download steam hosts
+#- name: download steam hosts
 #  shell: 
 #    warn: false
 #    cmd: >-
