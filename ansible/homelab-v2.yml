@@ -15,6 +15,7 @@
     - { role: rickbutton.couchpotato, tags: couchpotato }
     - rickbutton.sabnzbd
     - { role: rickbutton.pihole, tags: pihole }
+    - { role: rickbutton.borg, tags: borg }
     - { role: rickbutton.dmzproxy, tags: dmzproxy }
   sudo: yes
   remote_user: rickbutton

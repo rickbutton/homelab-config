@@ -1,0 +1,13 @@
+---
+
+- name: install borg
+  apt:
+    name: borgbackup
+    state: present  
+ 
+- name: mount data
+  mount:
+    name: /mnt/data
+    src: "{{ borg.host }}:{{ borg.path }}"
+    fstype: nfs
+    state: mounted
